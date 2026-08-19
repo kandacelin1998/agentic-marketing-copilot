@@ -382,9 +382,9 @@
       </h1>
 
       <p>
-        A multi agent decision support system that coordinates specialised
-        AI agents across strategy, audience, creative, and optimisation to
-        produce a structured marketing recommendation.
+        A multi agent decision support prototype that coordinates specialised
+        agents across strategy, audience, creative, and optimisation to produce
+        a structured marketing recommendation.
       </p>
     </section>
 
@@ -399,7 +399,7 @@
         <label>Product or campaign</label>
         <input
           id="product"
-          value="PlayStation Plus Summer Campaign"
+          value="Summer Gaming Subscription Campaign"
           placeholder="e.g. Premium subscription launch"
         />
 
@@ -513,17 +513,17 @@
 
             <div class="metric-grid">
               <div class="metric">
-                <strong>CTR</strong>
-                <span>Creative signal</span>
+                <strong id="metric1">CTR</strong>
+                <span>Primary signal</span>
               </div>
 
               <div class="metric">
-                <strong>CVR</strong>
+                <strong id="metric2">CVR</strong>
                 <span>Conversion signal</span>
               </div>
 
               <div class="metric">
-                <strong>ROAS</strong>
+                <strong id="metric3">ROAS</strong>
                 <span>Commercial signal</span>
               </div>
             </div>
@@ -566,7 +566,7 @@
     </section>
 
     <footer>
-      Built as an AI Product Operations portfolio project
+      AI Product Operations portfolio prototype
     </footer>
 
   </div>
@@ -581,6 +581,58 @@
       "optimisationAgent"
     ];
 
+    const objectiveMap = {
+      "Increase subscriptions": {
+        strategy:
+          "Use a conversion focused campaign with a strong value proposition and clear urgency.",
+        creative:
+          "Lead with membership value, exclusivity, and limited time benefits.",
+        test:
+          "Test annual value messaging against urgency led monthly offers.",
+        metrics: ["CTR", "CVR", "ROAS"]
+      },
+
+      "Drive product awareness": {
+        strategy:
+          "Prioritise broad reach and memorable product positioning before optimising for conversion.",
+        creative:
+          "Use bold visual storytelling and simple benefit led messaging.",
+        test:
+          "Test product education creative against lifestyle led storytelling.",
+        metrics: ["Reach", "VTR", "Brand Lift"]
+      },
+
+      "Increase revenue": {
+        strategy:
+          "Focus spend on high intent audiences and prioritise offers with the strongest revenue potential.",
+        creative:
+          "Highlight premium value, bundles, and upgrade opportunities.",
+        test:
+          "Test premium positioning against promotional value messaging.",
+        metrics: ["CTR", "CVR", "ROAS"]
+      },
+
+      "Improve retention": {
+        strategy:
+          "Focus on existing customer value, engagement, and reasons to stay subscribed.",
+        creative:
+          "Emphasise ongoing benefits, exclusives, and future value.",
+        test:
+          "Test personalised benefit reminders against loyalty messaging.",
+        metrics: ["Engagement", "Retention", "LTV"]
+      },
+
+      "Acquire new customers": {
+        strategy:
+          "Build a low friction acquisition journey with clear value for first time customers.",
+        creative:
+          "Use simple introductory messaging that removes uncertainty and communicates immediate benefit.",
+        test:
+          "Test introductory offers against product benefit messaging.",
+        metrics: ["CTR", "CPA", "CVR"]
+      }
+    };
+
     function resetAgents() {
       agents.forEach(id => {
         const agent = document.getElementById(id);
@@ -589,17 +641,39 @@
       });
     }
 
-    async function activateAgent(id) {
+    async function activateAgent(id, delay) {
+      await wait(delay);
+
       const agent = document.getElementById(id);
 
       agent.classList.add("active");
       agent.querySelector(".agent-state").textContent = "Analysing";
 
-      await wait(600);
+      await wait(700);
 
       agent.classList.remove("active");
       agent.classList.add("complete");
       agent.querySelector(".agent-state").textContent = "Complete";
+    }
+
+    function getBudgetStrategy(budget) {
+      if (budget === "£50K") {
+        return "Concentrate spend on one or two high intent channels and avoid spreading budget too thin.";
+      }
+
+      if (budget === "£100K") {
+        return "Use a focused channel mix with enough budget reserved for testing and optimisation.";
+      }
+
+      if (budget === "£250K") {
+        return "Use a balanced mix of acquisition, retargeting, and experimentation, reallocating spend toward winners.";
+      }
+
+      if (budget === "£500K") {
+        return "Run parallel audience and creative tests across several channels before scaling the strongest combinations.";
+      }
+
+      return "Use portfolio style budget allocation across awareness, acquisition, retargeting, and experimentation.";
     }
 
     async function runAgents() {
@@ -620,6 +694,9 @@
       const context =
         document.getElementById("context").value.trim();
 
+      const objectiveLogic = objectiveMap[objective];
+      const budgetStrategy = getBudgetStrategy(budget);
+
       button.disabled = true;
       button.textContent = "Agents analysing brief...";
 
@@ -629,39 +706,49 @@
       resetAgents();
 
       await Promise.all([
-        activateAgent("strategyAgent"),
-        activateAgent("audienceAgent"),
-        activateAgent("creativeAgent"),
-        activateAgent("optimisationAgent")
+        activateAgent("strategyAgent", 0),
+        activateAgent("audienceAgent", 150),
+        activateAgent("creativeAgent", 300),
+        activateAgent("optimisationAgent", 450)
       ]);
 
-      await wait(400);
-
-      const contextSentence = context
-        ? ` The team should account for this commercial context: ${context}`
-        : "";
+      await wait(350);
 
       document.getElementById("recommendation").textContent =
-        `For ${product}, prioritise a focused campaign designed to ${objective.toLowerCase()} among ${audience}. Allocate the ${budget} budget toward high intent audiences first, then expand investment only when conversion signals validate the proposition.${contextSentence}`;
+        `${objectiveLogic.strategy} For ${product}, prioritise ${audience}. ${budgetStrategy} ${
+          context ? "Key commercial context: " + context : ""
+        }`;
 
       document.getElementById("audienceOutput").innerHTML = `
-        <li>Prioritise ${audience} using behavioural and intent based segmentation.</li>
-        <li>Separate high intent prospects from existing engaged customers.</li>
-        <li>Build messaging around value, relevance, and a clear reason to act now.</li>
+        <li>Primary segment: ${audience}.</li>
+        <li>Prioritise users showing recent category interest or high purchase intent.</li>
+        <li>Create a separate retargeting segment for users who engaged but did not convert.</li>
+        <li>Tailor messaging around likely barriers including price, relevance, and perceived value.</li>
       `;
 
       document.getElementById("creativeOutput").innerHTML = `
-        <li>Lead with one clear customer benefit rather than multiple competing messages.</li>
-        <li>Create benefit led, urgency led, and social proof creative variants.</li>
-        <li>Adapt the strongest proposition across paid social, video, CRM, and onsite placements.</li>
+        <li>${objectiveLogic.creative}</li>
+        <li>Create three creative routes: value led, urgency led, and social proof led.</li>
+        <li>Adapt the strongest message across paid social, CRM, onsite, and video.</li>
+        <li>Keep each execution focused on one primary customer benefit.</li>
       `;
 
       document.getElementById("experimentOutput").innerHTML = `
-        <li>A/B test value messaging against urgency messaging.</li>
-        <li>Track CTR as an early creative signal and conversion rate as the primary outcome.</li>
-        <li>Shift spend toward winning combinations when sufficient evidence is available.</li>
-        <li>Review performance by audience segment rather than relying only on blended averages.</li>
+        <li>${objectiveLogic.test}</li>
+        <li>Compare high intent audiences against broader prospecting segments.</li>
+        <li>Use early engagement metrics to assess creative performance.</li>
+        <li>Use conversion efficiency to determine where budget should move.</li>
+        <li>Scale winning audience and creative combinations once performance is consistent.</li>
       `;
+
+      document.getElementById("metric1").textContent =
+        objectiveLogic.metrics[0];
+
+      document.getElementById("metric2").textContent =
+        objectiveLogic.metrics[1];
+
+      document.getElementById("metric3").textContent =
+        objectiveLogic.metrics[2];
 
       document.getElementById("emptyState").style.display = "none";
       document.getElementById("result").classList.add("show");
@@ -672,3 +759,9 @@
   </script>
 </body>
 </html>
+
+
+
+    
+
+
