@@ -4,7 +4,7 @@ An interactive multi agent decision support prototype that turns a marketing cam
 
 ## Live Demo
 
-Add GitHub Pages URL here after deployment.
+(https://kandacelin1998.github.io/agentic-marketing-copilot/)
 
 ## The Problem
 
